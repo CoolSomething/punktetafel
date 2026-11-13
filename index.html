@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070b10">
+<title>Punktetafel 11</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: Life-OS-Look. Dunkles Terminal-Dashboard, Kopfleiste mit Laufband, Seiten-Labels im Format "// NAME", Karten mit abgeschrägter Ecke. Bewusst nur dunkel. */
+:root{
+  --bg:#070b10; --bg2:#0b111a; --surface:#0e1520; --surface2:#131c2a; --line:#1e2a3c; --line2:#2a3a52;
+  --ink:#e6edf7; --muted:#7f8ea6; --dim:#4f5d73;
+  --acc:#f5e443; --acc-ink:#0a0d12; --cyan:#3ee6ff; --pink:#ff3d7f;
+  --gold:#f5c542; --silver:#b4c0d4; --bronze:#e08a4f;
+  --good:#3ef0a0; --mid:#f5c542; --bad:#ff4d6d;
+  --f-display:"Chakra Petch",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"Inter",ui-sans-serif,system-ui,sans-serif;
+  --f-num:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --cut:14px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;
+  background-image:
+    radial-gradient(900px 500px at 85% -10%,rgba(62,230,255,.07),transparent 60%),
+    radial-gradient(700px 400px at -10% 10%,rgba(245,228,67,.05),transparent 60%),
+    linear-gradient(rgba(62,230,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(62,230,255,.035) 1px,transparent 1px);
+  background-size:auto,auto,32px 32px,32px 32px;background-attachment:fixed}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+::selection{background:var(--acc);color:var(--acc-ink)}
+.in{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* Kopfleiste */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:rgba(7,11,16,.82);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.ticker{overflow:hidden;border-bottom:1px solid var(--line);background:var(--acc);color:var(--acc-ink);font-family:var(--f-num);font-size:11px;font-weight:700;letter-spacing:.14em;white-space:nowrap}
+.ticker div{display:inline-block;padding:3px 0;animation:tick 40s linear infinite}
+@keyframes tick{to{transform:translateX(-50%)}}
+.top .in{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:12px}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:700;font-size:19px;letter-spacing:.04em;color:var(--ink);text-decoration:none;text-transform:uppercase}
+.logo i{display:grid;place-items:center;width:30px;height:30px;background:var(--acc);color:var(--acc-ink);font-style:normal;font-family:var(--f-num);font-size:13px;font-weight:700;clip-path:polygon(0 0,100% 0,100% 70%,70% 100%,0 100%)}
+.logo span{color:var(--muted);font-family:var(--f-num);font-size:12px;font-weight:500;letter-spacing:.1em}
+nav{display:flex;gap:2px;background:var(--surface);border:1px solid var(--line);padding:3px;border-radius:8px}
+nav a{color:var(--muted);text-decoration:none;font-family:var(--f-num);font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;padding:7px 14px;border-radius:6px;transition:color .15s,background .15s}
+nav a:hover{color:var(--ink)}
+nav a[aria-current="page"]{background:var(--acc);color:var(--acc-ink)}
+
+main .in{padding-block:30px 40px;display:flex;flex-direction:column;gap:22px}
+.tag{font-family:var(--f-num);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);margin:0 0 8px}
+.tag::before{content:"// ";color:var(--dim)}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(30px,5.5vw,46px);line-height:1.02;margin:0;letter-spacing:-.005em;text-wrap:balance}
+h1 em{font-style:normal;color:var(--acc)}
+h2{font-family:var(--f-display);font-weight:700;font-size:22px;margin:0;letter-spacing:.01em}
+.lead{color:var(--muted);margin:8px 0 0;max-width:62ch}
+.pagehead{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
+.card{background:linear-gradient(180deg,var(--surface2),var(--surface));border:1px solid var(--line);padding:20px;display:flex;flex-direction:column;gap:16px;min-width:0;position:relative;
+  clip-path:polygon(0 0,calc(100% - var(--cut)) 0,100% var(--cut),100% 100%,0 100%)}
+.card::after{content:"";position:absolute;top:0;right:0;width:calc(var(--cut)*1.42);height:1px;background:var(--line2);transform-origin:right top;transform:translateX(0) rotate(45deg)}
+label,.lbl{font-family:var(--f-num);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--muted)}
+input,select{font:inherit;color:var(--ink);background:var(--bg2);border:1px solid var(--line2);border-radius:6px;padding:10px 12px;width:100%;transition:border-color .15s,box-shadow .15s}
+input::placeholder{color:var(--dim)}
+input:focus,select:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(62,230,255,.15)}
+button:focus-visible,a:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.hint{font-size:12.5px;color:var(--muted);margin:0}
+button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--line2);background:var(--surface2);color:var(--ink);padding:9px 14px;transition:border-color .15s,background .15s,color .15s,transform .1s}
+button:hover{border-color:var(--muted)}
+button:active{transform:translateY(1px)}
+button.primary{background:var(--acc);border-color:var(--acc);color:var(--acc-ink);font-family:var(--f-num);font-weight:700;font-size:12.5px;letter-spacing:.12em;text-transform:uppercase}
+button.primary:hover{box-shadow:0 0 18px rgba(245,228,67,.35)}
+button.ghost{background:none;border-color:transparent;color:var(--muted);padding:5px 8px}
+button.ghost:hover{color:var(--bad)}
+button.danger{color:var(--bad);border-color:rgba(255,77,109,.4);font-family:var(--f-num);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+button.danger:hover{background:rgba(255,77,109,.1);border-color:var(--bad)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.status{font-family:var(--f-num);font-size:12px;letter-spacing:.06em;min-height:1.4em;margin:0;color:var(--muted)}
+.status.err{color:var(--bad)} .status.ok{color:var(--good)}
+.p-good{color:var(--good)} .p-mid{color:var(--mid)} .p-bad{color:var(--bad)}
+.scale{display:flex;flex-wrap:wrap;gap:6px;font-family:var(--f-num);font-size:11px;color:var(--muted)}
+.scale span{border:1px solid var(--line);border-radius:4px;padding:3px 7px;background:var(--surface)}
+.scale b{color:var(--ink)}
+
+/* Tafel */
+.podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:end}
+.pod{background:linear-gradient(180deg,var(--surface2),var(--surface));border:1px solid var(--line);padding:18px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;position:relative;
+  clip-path:polygon(0 0,calc(100% - var(--cut)) 0,100% var(--cut),100% 100%,0 100%)}
+.pod .nick{font-family:var(--f-display);font-size:17px}
+.pod b{font-family:var(--f-num);font-size:28px;line-height:1.1}
+.pod.r1{padding-block:30px;border-color:rgba(245,197,66,.55);background:linear-gradient(180deg,rgba(245,197,66,.13),var(--surface) 70%);box-shadow:inset 0 1px 0 rgba(245,197,66,.4)}
+.pod.r1 b{color:var(--gold);text-shadow:0 0 22px rgba(245,197,66,.45)}
+.pod.r2{border-color:rgba(180,192,212,.35)} .pod.r3{border-color:rgba(224,138,79,.4)}
+.pod.empty{color:var(--dim);border-style:dashed}
+@media (max-width:560px){.podium{gap:8px}.pod{padding:12px 6px}.pod.r1{padding-block:20px}.pod b{font-size:20px}.pod .nick{font-size:14px}}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tabs button{padding:6px 12px;font-family:var(--f-num);font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border-radius:4px;color:var(--muted);background:transparent}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-pressed="true"]{background:rgba(62,230,255,.12);color:var(--cyan);border-color:var(--cyan)}
+.tablehead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px}
+.count{font-family:var(--f-num);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th{text-align:left;font-family:var(--f-num);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:var(--dim);padding:6px 10px;border-bottom:1px solid var(--line2)}
+td{padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr{transition:background .15s}
+tbody tr:hover td{background:rgba(255,255,255,.02)}
+tr.me td{background:rgba(245,228,67,.06)}
+tr.me td:first-child{box-shadow:inset 3px 0 0 var(--acc)}
+td.rank{font-family:var(--f-num);font-weight:700;width:52px;color:var(--muted)}
+.medal{display:inline-grid;place-items:center;width:28px;height:28px;color:var(--acc-ink);font-size:13px;font-family:var(--f-num);font-weight:700;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%)}
+.m1{background:var(--gold)} .m2{background:var(--silver)} .m3{background:var(--bronze)}
+td.num{font-family:var(--f-num);font-weight:700;font-size:16px;text-align:right;white-space:nowrap}
+.nick{font-weight:600;overflow-wrap:anywhere}
+.you{font-family:var(--f-num);font-size:10px;font-weight:700;color:var(--acc-ink);background:var(--acc);text-transform:uppercase;letter-spacing:.12em;margin-left:8px;padding:1px 5px;border-radius:3px;vertical-align:2px}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chips span{border:1px solid var(--line);background:var(--bg2);border-radius:4px;padding:1px 7px;font-family:var(--f-num);font-size:11.5px;color:var(--muted);white-space:nowrap}
+.chips b{font-weight:700}
+.empty{padding:32px 8px;text-align:center;color:var(--muted)}
+.empty a{color:var(--cyan)}
+
+/* Meine Noten */
+.me-grid{display:grid;grid-template-columns:230px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:760px){.me-grid{grid-template-columns:minmax(0,1fr)}}
+.side{display:flex;flex-direction:column;gap:6px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 96px)}
+@media (max-width:760px){.side{position:static;flex-direction:row;overflow-x:auto;padding-bottom:4px}}
+.side .lbl{margin:0 0 4px 2px}
+@media (max-width:760px){.side .lbl{display:none}}
+.subj{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;background:var(--surface);white-space:nowrap;padding:10px 12px;border-color:var(--line)}
+.subj b{font-family:var(--f-num);font-size:12.5px}
+.subj[aria-current="true"]{background:rgba(62,230,255,.1);border-color:var(--cyan);color:var(--ink);box-shadow:inset 3px 0 0 var(--cyan)}
+.addsubj{display:flex;gap:6px}
+.addsubj select{font-family:var(--f-num);font-size:12px;letter-spacing:.06em;color:var(--muted);border-style:dashed}
+@media (max-width:760px){.addsubj{flex:0 0 200px}}
+.subjhead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:12px}
+.big{display:flex;gap:22px}
+.big div{display:flex;flex-direction:column;align-items:flex-end}
+.big b{font-family:var(--f-num);font-size:34px;line-height:1.1}
+.glist{display:flex;flex-direction:column}
+.g{display:grid;grid-template-columns:minmax(0,1fr) auto 34px;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}
+.g:first-child{border-top:1px solid var(--line)}
+.g .kind{font-family:var(--f-num);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.g .p{font-family:var(--f-num);font-weight:700;font-size:19px;min-width:2.2em;text-align:right}
+.addg{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) auto;gap:10px;align-items:end;padding:14px;background:var(--bg2);border:1px dashed var(--line2);border-radius:6px}
+@media (max-width:460px){.addg{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.addg button{grid-column:1/-1}}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.profile{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.stat{border:1px solid var(--line);background:var(--bg2);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.stat b{font-family:var(--f-num);font-size:24px;line-height:1.1}
+.stat.hl b{color:var(--acc)}
+@media (max-width:460px){.stat b{font-size:18px}.stat{padding:10px}}
+.note{font-size:12.5px;color:var(--muted);border-left:2px solid var(--pink);padding-left:10px;margin:0}
+footer .in{padding-block:0 32px;color:var(--dim);font-family:var(--f-num);font-size:11px;letter-spacing:.08em}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.loginwrap{padding-block:12vh 40px;display:flex;justify-content:center}
+.logincard{max-width:560px;width:100%;padding:32px}
+.navbtn{background:none;border:none;color:var(--muted);font-family:var(--f-num);font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;padding:7px 12px}
+.navbtn:hover{color:var(--bad)}
+</style>
+
+</head>
+<body>
+<header class="top">
+  <div class="in">
+    <a class="logo" href="#tafel"><i>11</i>Punktetafel</a>
+    <nav aria-label="Seiten">
+      <a href="#tafel" data-page="tafel">Scoreboard</a>
+      <a href="#noten" data-page="noten">Meine Noten</a>
+      <button type="button" id="logout" class="navbtn" hidden>Abmelden</button>
+    </nav>
+  </div>
+</header>
+
+<section id="login" class="in loginwrap" hidden>
+  <div class="card logincard">
+    <p class="tag" style="margin:0">Zugang</p>
+    <h1>Willkommen bei der <em>Punktetafel</em>.</h1>
+    <p class="lead">Melde dich mit Google an, um das Scoreboard zu sehen und deine Noten einzutragen. Auf der Tafel erscheint nur dein Spitzname, nie dein Google-Name.</p>
+    <div><button type="button" id="loginBtn" class="primary">Mit Google anmelden</button></div>
+    <p class="status" id="loginStatus" role="status"></p>
+  </div>
+</section>
+<main id="app" hidden>
+  <!-- Seite: Scoreboard -->
+  <section id="page-tafel" class="in">
+    <div class="pagehead">
+      <div>
+        <p class="tag" id="boardTag">Scoreboard · Gesamt</p>
+        <h1 id="boardTitle">Wer holt die <em>meisten Punkte</em>?</h1>
+        <p class="lead" id="boardLead">Pro Fach wird der Punkteschnitt gebildet, dann werden alle Fachschnitte addiert. Wer die höchste Summe hat, steht oben.</p>
+      </div>
+      <div class="scale" aria-label="Punkteskala"><span><b>15–13</b> = 1</span><span><b>12–10</b> = 2</span><span><b>9–7</b> = 3</span><span><b>6–4</b> = 4</span><span><b>3–1</b> = 5</span><span><b>0</b> = 6</span></div>
+    </div>
+    <div class="podium" id="podium"></div>
+    <div class="card">
+      <div class="tablehead">
+        <div class="tabs" id="tabs" role="group" aria-label="Rangliste nach"></div>
+        <span class="count" id="count"></span>
+      </div>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>#</th><th>Spitzname</th><th id="h3">Fachschnitte</th><th style="text-align:right" id="h4">Summe</th></tr></thead>
+          <tbody id="board"><tr><td colspan="4" class="empty">Scoreboard wird geladen …</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Seite: Meine Noten -->
+  <section id="page-noten" class="in" hidden>
+    <div class="pagehead">
+      <div>
+        <p class="tag">Meine Noten</p>
+        <h1>Dein <em>Notenheft</em>.</h1>
+        <p class="lead">Wähl links ein Fach und trag dort deine Noten einzeln ein. Alles wird sofort gespeichert.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="profile">
+        <div class="field">
+          <label for="nick">Spitzname auf dem Scoreboard</label>
+          <input id="nick" maxlength="24" placeholder="z. B. Mathe-Gott" autocomplete="off">
+        </div>
+        <button type="button" id="saveNick" class="primary">Speichern</button>
+      </div>
+      <p class="hint">Nimm lieber nicht deinen echten Namen.</p>
+      <div class="stats">
+        <div class="stat hl"><span class="lbl">Summe</span><b id="mySum">–</b></div>
+        <div class="stat"><span class="lbl">Platz</span><b id="myRank">–</b></div>
+        <div class="stat"><span class="lbl">Fächer</span><b id="myCount">0</b></div>
+      </div>
+      <p class="status" id="status" role="status"></p>
+    </div>
+
+    <div class="me-grid">
+      <div class="side" id="side" aria-label="Meine Fächer"></div>
+      <div class="card" id="subjPanel"></div>
+    </div>
+
+    <div class="card">
+      <p class="tag" style="margin:0">Daten</p>
+      <h2>Eintrag löschen</h2>
+      <p class="hint">Entfernt dich mit allen Noten vom Scoreboard.</p>
+      <div><button type="button" id="del" class="danger">Alles löschen</button></div>
+      <p class="note">Noten sind privat. Trag nur ein, was du teilen willst.</p>
+    </div>
+  </section>
+</main>
+<footer><div class="in">PUNKTETAFEL 11 // Nur Spitznamen sind für andere sichtbar. Jeder kann nur seinen eigenen Eintrag ändern.</div></footer>
+
+<script>
+const SUBJECTS=["Deutsch","Mathe","Englisch","Französisch","Spanisch","Latein","Physik","Chemie","Biologie","Informatik","Geschichte","Geografie","Sozialkunde","Wirtschaft","Ethik","Religion","Kunst","Musik","Sport","Astronomie"];
+const SHORT={Deutsch:"De",Mathe:"Ma",Englisch:"En",Französisch:"Fr",Spanisch:"Sp",Latein:"La",Physik:"Ph",Chemie:"Ch",Biologie:"Bio",Informatik:"Inf",Geschichte:"Ge",Geografie:"Geo",Sozialkunde:"Sk",Wirtschaft:"Wi",Ethik:"Eth",Religion:"Rel",Kunst:"Ku",Musik:"Mu",Sport:"Spo",Astronomie:"Ast"};
+const KINDS=["Klausur","Test","Mündlich","Referat","Hausaufgabe","Sonstiges"];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const note=p=>p==null?"–":p<1?"6":Math.min(6,Math.max(1,(17-p)/3)).toFixed(1).replace(".",",");
+const cls=p=>p>=10?"p-good":p>=5?"p-mid":"p-bad";
+const fmt=n=>n==null?"–":n.toFixed(1).replace(".",",");
+const ok=x=>Number.isInteger(x)&&x>=0&&x<=15;
+const pts=v=>(Array.isArray(v)?v:[v]).map(x=>x&&typeof x==="object"?x.p:x).filter(ok);
+const subjAvg=v=>{const a=pts(v);return a.length?a.reduce((x,y)=>x+y,0)/a.length:null};
+const subjAvgs=g=>Object.entries(g||{}).map(([s,v])=>[s,subjAvg(v)]).filter(([,a])=>a!=null);
+const totalOf=g=>{const a=subjAvgs(g);return a.length?a.reduce((x,[,v])=>x+v,0):null};
+const rankSort=(a,b)=>b.score-a.score||String(a.nick).localeCompare(String(b.nick));
+
+let db=null,me=null,entries=[],view="__all",active=null;
+let mine={nick:"",subjects:["Mathe","Deutsch","Englisch"],grades:{}};
+let dirty=false,saving=false,again=false;
+
+/* ---------- Seiten ---------- */
+function route(){
+  const page=location.hash==="#noten"?"noten":"tafel";
+  $("#page-tafel").hidden=page!=="tafel";
+  $("#page-noten").hidden=page!=="noten";
+  document.querySelectorAll("nav a").forEach(a=>{if(a.dataset.page===page)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
+  window.scrollTo(0,0);
+}
+addEventListener("hashchange",route);
+
+/* ---------- Scoreboard ---------- */
+function renderTabs(){
+  const used=[...new Set(entries.flatMap(e=>subjAvgs(e.grades).map(([s])=>s)))].sort((a,b)=>SUBJECTS.indexOf(a)-SUBJECTS.indexOf(b));
+  if(view!=="__all"&&!used.includes(view))view="__all";
+  $("#tabs").innerHTML=[["__all","Gesamt"],...used.map(s=>[s,s])].map(([k,l])=>`<button type="button" data-k="${esc(k)}" aria-pressed="${k===view}">${esc(l)}</button>`).join("");
+  $("#tabs").querySelectorAll("button").forEach(b=>b.onclick=()=>{view=b.dataset.k;renderBoard()});
+}
+function ranked(){
+  const all=view==="__all";
+  return entries.map(e=>({...e,score:all?totalOf(e.grades):subjAvg((e.grades||{})[view])})).filter(e=>e.score!=null).sort(rankSort);
+}
+function renderBoard(){
+  renderTabs();
+  const all=view==="__all";
+  $("#boardTag").textContent=all?"Scoreboard · Gesamt":`Scoreboard · ${view}`;
+  $("#boardTitle").innerHTML=all?"Wer holt die <em>meisten Punkte</em>?":`Wer ist vorne in <em>${esc(view)}</em>?`;
+  $("#boardLead").textContent=all?"Pro Fach wird der Punkteschnitt gebildet, dann werden alle Fachschnitte addiert. Wer die höchste Summe hat, steht oben.":`Rangliste nach dem Punkteschnitt in ${view}.`;
+  $("#h3").textContent=all?"Fachschnitte":"Noten";
+  $("#h4").textContent=all?"Summe":"Schnitt";
+  const list=ranked();
+  $("#count").textContent=list.length?`${list.length} ${list.length===1?"Eintrag":"Einträge"}`:"";
+  // Podium
+  const pod=[1,0,2].map(i=>{
+    const e=list[i],r=i+1;
+    if(!e)return `<div class="pod empty r${r}"><span class="medal m${r}">${r}</span><span>Noch frei</span></div>`;
+    return `<div class="pod r${r}"><span class="medal m${r}">${r}</span><span class="nick">${esc(e.nick||"Anonym")}</span><b class="${all?"":cls(e.score)}">${fmt(e.score)}</b><span class="hint">${all?"Punkte gesamt":"Note "+note(e.score)}</span></div>`;
+  });
+  $("#podium").innerHTML=pod.join("");
+  if(!list.length){$("#board").innerHTML=`<tr><td colspan="4" class="empty">Noch niemand auf dem Scoreboard. Trag unter <a href="#noten">Meine Noten</a> deine Punkte ein.</td></tr>`;return}
+  let rank=0,prev=null;
+  $("#board").innerHTML=list.map((e,i)=>{
+    if(e.score!==prev){rank=i+1;prev=e.score}
+    const r=rank<=3?`<span class="medal m${rank}">${rank}</span>`:rank;
+    const detail=all
+      ?subjAvgs(e.grades).map(([s,a])=>`<span title="${esc(s)}">${esc(SHORT[s]||s)} <b class="${cls(a)}">${fmt(a)}</b></span>`).join("")
+      :pts(e.grades[view]).map(p=>`<span><b class="${cls(p)}">${p}</b></span>`).join("");
+    return `<tr class="${e.id===me?"me":""}"><td class="rank">${r}</td>
+      <td><span class="nick">${esc(e.nick||"Anonym")}</span>${e.id===me?'<span class="you">du</span>':""}</td>
+      <td><div class="chips">${detail}</div></td>
+      <td class="num"><span class="${all?"":cls(e.score)}">${fmt(e.score)}</span></td></tr>`;
+  }).join("");
+}
+
+/* ---------- Meine Noten ---------- */
+function setStatus(t,k=""){const s=$("#status");s.textContent=t;s.className="status "+k}
+function renderSummary(){
+  const t=totalOf(mine.grades);
+  $("#mySum").textContent=t==null?"–":fmt(t);
+  $("#myCount").textContent=subjAvgs(mine.grades).length;
+  const prevView=view;view="__all";const list=ranked();view=prevView;
+  const i=list.findIndex(e=>e.id===me);
+  $("#myRank").textContent=i<0?"–":`${i+1}/${list.length}`;
+}
+function renderSide(){
+  if(!mine.subjects.includes(active))active=mine.subjects[0]||null;
+  const free=SUBJECTS.filter(s=>!mine.subjects.includes(s));
+  $("#side").innerHTML=`<span class="lbl">Fächer</span>`+mine.subjects.map(s=>{
+    const a=subjAvg(mine.grades[s]);
+    return `<button type="button" class="subj" data-s="${esc(s)}" aria-current="${s===active}"><span>${esc(s)}</span><b class="${a==null?"":cls(a)}">${fmt(a)}</b></button>`;
+  }).join("")+(free.length?`<div class="addsubj"><select id="newSubj" aria-label="Fach hinzufügen"><option value="">+ Fach hinzufügen</option>${free.map(s=>`<option>${s}</option>`).join("")}</select></div>`:"");
+  $("#side").querySelectorAll(".subj").forEach(b=>b.onclick=()=>{active=b.dataset.s;renderSide();renderPanel()});
+  const ns=$("#newSubj");if(ns)ns.onchange=()=>{if(!ns.value)return;mine.subjects.push(ns.value);active=ns.value;change()};
+}
+function renderPanel(){
+  const p=$("#subjPanel");
+  if(!active){p.innerHTML=`<p class="empty">Füg links ein Fach hinzu, um Noten einzutragen.</p>`;return}
+  const list=Array.isArray(mine.grades[active])?mine.grades[active]:[];
+  const a=subjAvg(list);
+  p.innerHTML=`
+    <div class="subjhead">
+      <div><h2>${esc(active)}</h2><p class="hint">${list.length} ${list.length===1?"Note":"Noten"}</p></div>
+      <div class="big"><div><span class="lbl">Schnitt</span><b class="${a==null?"":cls(a)}">${fmt(a)}</b></div><div><span class="lbl">Note</span><b>${note(a)}</b></div></div>
+    </div>
+    <div class="glist">${list.length?list.map((g,i)=>`<div class="g"><span class="kind">${esc(g.t||"Note")}</span><span class="p ${cls(g.p)}">${g.p}</span><button type="button" class="ghost" data-i="${i}" aria-label="Note löschen">✕</button></div>`).join(""):`<p class="hint">Noch keine Noten in ${esc(active)}.</p>`}</div>
+    <form class="addg" id="addG" novalidate>
+      <div class="field"><label for="gKind">Art</label><select id="gKind">${KINDS.map(k=>`<option>${k}</option>`).join("")}</select></div>
+      <div class="field"><label for="gPts">Punkte (0–15)</label><input id="gPts" type="number" min="0" max="15" step="1" inputmode="numeric" placeholder="z. B. 12"></div>
+      <button type="submit" class="primary">Note hinzufügen</button>
+    </form>
+    <div><button type="button" class="ghost" id="rmSubj">Fach ${esc(active)} entfernen</button></div>`;
+  p.querySelectorAll(".g button").forEach(b=>b.onclick=()=>{list.splice(+b.dataset.i,1);mine.grades[active]=list;change()});
+  $("#addG").onsubmit=ev=>{
+    ev.preventDefault();
+    const v=Number($("#gPts").value);
+    if($("#gPts").value===""||!ok(v)){setStatus("Punkte müssen eine ganze Zahl von 0 bis 15 sein.","err");$("#gPts").focus();return}
+    if(list.length>=30){setStatus("Mehr als 30 Noten pro Fach gehen nicht.","err");return}
+    list.push({p:v,t:$("#gKind").value});mine.grades[active]=list;change();
+    setTimeout(()=>$("#gPts")&&$("#gPts").focus(),0);
+  };
+  $("#rmSubj").onclick=()=>{
+    const b=$("#rmSubj");
+    if(b.dataset.c!=="1"){b.dataset.c="1";b.textContent=`Wirklich ${active} mit allen Noten entfernen?`;return}
+    mine.subjects=mine.subjects.filter(s=>s!==active);delete mine.grades[active];active=null;change();
+  };
+}
+function renderMine(){renderSide();renderPanel();renderSummary()}
+function change(){dirty=true;renderMine();save()}
+
+async function save(){
+  if(!db||!me){setStatus("Speichern geht hier nicht. Bitte melde dich an.","err");return}
+  if(saving){again=true;return}
+  saving=true;setStatus("Wird gespeichert …");
+  try{
+    const g={};mine.subjects.forEach(s=>{if(Array.isArray(mine.grades[s])&&mine.grades[s].length)g[s]=mine.grades[s]});
+    await db.doc("scores/"+me).set({nick:(mine.nick||"Anonym").slice(0,24),subjects:mine.subjects,grades:g,total:totalOf(g),updatedAt:new Date().toISOString()});
+    setStatus("Gespeichert.","ok");
+  }catch(e){setStatus(e&&e.code==="not_granted"?"Du hast nur Leserechte. Bitte melde dich neu an.":"Speichern hat nicht geklappt. Versuch es gleich noch mal.","err")}
+  finally{saving=false;if(again){again=false;save()}else dirty=false}
+}
+
+$("#saveNick").onclick=()=>{
+  const n=$("#nick").value.trim();
+  if(!n){setStatus("Gib dir einen Spitznamen, damit du dich auf dem Scoreboard findest.","err");return}
+  mine.nick=n;change();
+};
+$("#del").onclick=async()=>{
+  const b=$("#del");
+  if(b.dataset.c!=="1"){b.dataset.c="1";b.textContent="Wirklich alles löschen?";return}
+  b.dataset.c="";b.textContent="Alles löschen";
+  if(!db||!me)return;
+  try{await db.doc("scores/"+me).delete();mine={nick:"",subjects:["Mathe","Deutsch","Englisch"],grades:{}};$("#nick").value="";renderMine();setStatus("Dein Eintrag ist gelöscht.","ok")}
+  catch(e){setStatus("Löschen hat nicht geklappt.","err")}
+};
+
+route();renderBoard();renderMine();
+
+</script>
+
+<script type="module">
+import { firebaseConfig } from "./firebase-config.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const fs = getFirestore(app);
+const q = s => document.querySelector(s);
+
+// Kleine Huelle mit derselben Schnittstelle, die die Seite schon benutzt
+const fdb = {
+  doc: p => ({ set: d => setDoc(doc(fs, p), d), delete: () => deleteDoc(doc(fs, p)) }),
+  collection: p => ({ onSnapshot: (next, err) => onSnapshot(collection(fs, p),
+    s => next({ docs: s.docs.map(d => ({ id: d.id, data: () => d.data() })) }),
+    e => err && err({ code: e.code })) })
+};
+
+let unsub = null;
+q("#loginBtn").onclick = async () => {
+  q("#loginStatus").textContent = "Verbinde …";
+  try { await signInWithPopup(auth, new GoogleAuthProvider()); q("#loginStatus").textContent = ""; }
+  catch (e) { q("#loginStatus").textContent = "Anmeldung hat nicht geklappt (" + e.code + ")."; q("#loginStatus").className = "status err"; }
+};
+q("#logout").onclick = () => signOut(auth);
+
+onAuthStateChanged(auth, user => {
+  if (unsub) { unsub(); unsub = null; }
+  q("#login").hidden = !!user;
+  q("#app").hidden = !user;
+  q("#logout").hidden = !user;
+  document.querySelectorAll("nav a").forEach(a => a.hidden = !user);
+  if (!user) { db = null; me = null; entries = []; return; }
+  db = fdb; me = user.uid;
+  unsub = db.collection("scores").onSnapshot(snap => {
+    entries = snap.docs.map(x => ({ id: x.id, ...x.data() }));
+    const d = entries.find(e => e.id === me);
+    if (d && !dirty && !saving) {
+      const g = {};
+      Object.entries(d.grades || {}).forEach(([s, v]) => { g[s] = (Array.isArray(v) ? v : [v]).map(x => x && typeof x === "object" ? x : { p: x, t: "Note" }).filter(x => ok(x.p)); });
+      mine = { nick: d.nick || "", subjects: Array.isArray(d.subjects) ? d.subjects.filter(s => SUBJECTS.includes(s)) : Object.keys(g), grades: g };
+      Object.keys(g).forEach(s => { if (!mine.subjects.includes(s)) mine.subjects.push(s); });
+      if (document.activeElement !== q("#nick")) q("#nick").value = mine.nick;
+      renderSide(); if (!document.activeElement || !document.activeElement.closest("#subjPanel")) renderPanel();
+    }
+    renderBoard(); renderSummary();
+  }, err => { q("#board").innerHTML = `<tr><td colspan="4" class="empty">Das Scoreboard konnte nicht geladen werden (${esc(err.code)}).</td></tr>`; });
+});
+</script>
+</body>
+</html>

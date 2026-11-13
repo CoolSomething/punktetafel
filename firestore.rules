@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Jeder angemeldete Nutzer darf das Scoreboard lesen,
+    // aber nur seinen eigenen Eintrag (Dokument-ID = eigene UID) schreiben oder loeschen.
+    match /scores/{uid} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['nick', 'subjects', 'grades', 'total', 'updatedAt'])
+        && request.resource.data.nick is string
+        && request.resource.data.nick.size() > 0
+        && request.resource.data.nick.size() <= 24
+        && request.resource.data.subjects is list
+        && request.resource.data.subjects.size() <= 20
+        && request.resource.data.grades is map
+        && request.resource.data.grades.size() <= 20;
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+    // Alles andere ist gesperrt.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
