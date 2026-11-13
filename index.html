@@ -154,6 +154,7 @@ footer .in{padding-block:0 32px;color:var(--dim);font-family:var(--f-num);font-s
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 .loginwrap{padding-block:12vh 40px;display:flex;justify-content:center}
 .logincard{max-width:560px;width:100%;padding:32px}
+.authform{display:flex;flex-direction:column;gap:14px}
 .navbtn{background:none;border:none;color:var(--muted);font-family:var(--f-num);font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;padding:7px 12px}
 .navbtn:hover{color:var(--bad)}
 </style>
@@ -175,8 +176,27 @@ footer .in{padding-block:0 32px;color:var(--dim);font-family:var(--f-num);font-s
   <div class="card logincard">
     <p class="tag" style="margin:0">Zugang</p>
     <h1>Willkommen bei der <em>Punktetafel</em>.</h1>
-    <p class="lead">Melde dich mit Google an, um das Scoreboard zu sehen und deine Noten einzutragen. Auf der Tafel erscheint nur dein Spitzname, nie dein Google-Name.</p>
-    <div><button type="button" id="loginBtn" class="primary">Mit Google anmelden</button></div>
+    <p class="lead">Melde dich an oder erstell dir ein Konto. Auf der Tafel erscheint nur dein Spitzname.</p>
+    <div class="tabs" role="group" aria-label="Anmelden oder registrieren">
+      <button type="button" id="modeLogin" aria-pressed="true">Anmelden</button>
+      <button type="button" id="modeRegister" aria-pressed="false">Konto erstellen</button>
+    </div>
+    <form id="authForm" class="authform" novalidate>
+      <div class="field">
+        <label for="uname">Username</label>
+        <input id="uname" autocomplete="username" maxlength="20" placeholder="z. B. dilan_11" autocapitalize="none" spellcheck="false">
+      </div>
+      <div class="field">
+        <label for="pw">Passwort</label>
+        <input id="pw" type="password" autocomplete="current-password" placeholder="mindestens 6 Zeichen">
+      </div>
+      <div class="field" id="pw2Field" hidden>
+        <label for="pw2">Passwort wiederholen</label>
+        <input id="pw2" type="password" autocomplete="new-password">
+      </div>
+      <p class="hint" id="regHint" hidden>3–20 Zeichen: Buchstaben, Zahlen, Punkt, Unterstrich oder Bindestrich. Merk dir dein Passwort gut, zurücksetzen geht nicht.</p>
+      <div><button type="submit" id="authBtn" class="primary">Anmelden</button></div>
+    </form>
     <p class="status" id="loginStatus" role="status"></p>
   </div>
 </section>
@@ -410,7 +430,7 @@ route();renderBoard();renderMine();
 <script type="module">
 import { firebaseConfig } from "./firebase-config.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const app = initializeApp(firebaseConfig);
@@ -427,11 +447,47 @@ const fdb = {
 };
 
 let unsub = null;
-q("#loginBtn").onclick = async () => {
-  q("#loginStatus").textContent = "Verbinde …";
-  try { await signInWithPopup(auth, new GoogleAuthProvider()); q("#loginStatus").textContent = ""; }
-  catch (e) { q("#loginStatus").textContent = "Anmeldung hat nicht geklappt (" + e.code + ")."; q("#loginStatus").className = "status err"; }
+// Usernamen werden intern als E-Mail-Adresse gespeichert, weil Firebase das so verlangt.
+// Es wird keine Mail verschickt; die Domain existiert nur als Platzhalter.
+const DOMAIN = "punktetafel.app";
+let register = false, freshName = null;
+const setMode = r => {
+  register = r;
+  q("#modeLogin").setAttribute("aria-pressed", !r);
+  q("#modeRegister").setAttribute("aria-pressed", r);
+  q("#pw2Field").hidden = !r; q("#regHint").hidden = !r;
+  q("#pw").autocomplete = r ? "new-password" : "current-password";
+  q("#authBtn").textContent = r ? "Konto erstellen" : "Anmelden";
+  loginMsg("");
 };
+const loginMsg = (t, k = "") => { const s = q("#loginStatus"); s.textContent = t; s.className = "status " + k; };
+q("#modeLogin").onclick = () => setMode(false);
+q("#modeRegister").onclick = () => setMode(true);
+const ERR = {
+  "auth/invalid-credential": "Username oder Passwort ist falsch.",
+  "auth/wrong-password": "Username oder Passwort ist falsch.",
+  "auth/user-not-found": "Username oder Passwort ist falsch.",
+  "auth/email-already-in-use": "Dieser Username ist schon vergeben.",
+  "auth/weak-password": "Das Passwort braucht mindestens 6 Zeichen.",
+  "auth/too-many-requests": "Zu viele Versuche. Warte kurz und probier es dann noch mal.",
+  "auth/network-request-failed": "Keine Verbindung. Prüf dein Internet.",
+  "auth/operation-not-allowed": "Anmelden mit Username ist noch nicht freigeschaltet. Der Admin muss in Firebase „E-Mail/Passwort“ aktivieren."
+};
+q("#authForm").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const name = q("#uname").value.trim().toLowerCase(), pw = q("#pw").value;
+  if (!/^[a-z0-9._-]{3,20}$/.test(name)) return loginMsg("Der Username braucht 3–20 Zeichen: Buchstaben, Zahlen, Punkt, Unterstrich oder Bindestrich.", "err");
+  if (pw.length < 6) return loginMsg("Das Passwort braucht mindestens 6 Zeichen.", "err");
+  if (register && pw !== q("#pw2").value) return loginMsg("Die Passwörter stimmen nicht überein.", "err");
+  q("#authBtn").disabled = true; loginMsg(register ? "Konto wird erstellt …" : "Anmelden …");
+  try {
+    const email = name + "@" + DOMAIN;
+    if (register) { freshName = name; await createUserWithEmailAndPassword(auth, email, pw); }
+    else await signInWithEmailAndPassword(auth, email, pw);
+    q("#pw").value = ""; q("#pw2").value = ""; loginMsg("");
+  } catch (e) { freshName = null; loginMsg(ERR[e.code] || "Das hat nicht geklappt (" + e.code + ").", "err"); }
+  finally { q("#authBtn").disabled = false; }
+});
 q("#logout").onclick = () => signOut(auth);
 
 onAuthStateChanged(auth, user => {
@@ -439,9 +495,13 @@ onAuthStateChanged(auth, user => {
   q("#login").hidden = !!user;
   q("#app").hidden = !user;
   q("#logout").hidden = !user;
-  document.querySelectorAll("nav a").forEach(a => a.hidden = !user);
-  if (!user) { db = null; me = null; entries = []; return; }
+  q("nav").hidden = !user;
+  if (!user) { db = null; me = null; entries = []; mine = { nick: "", subjects: ["Mathe", "Deutsch", "Englisch"], grades: {} }; q("#nick").value = ""; renderMine(); return; }
   db = fdb; me = user.uid;
+  setMode(false);
+  const uname = (user.email || "").split("@")[0];
+  if (freshName) { mine.nick = freshName; q("#nick").value = freshName; location.hash = "#noten"; freshName = null; }
+  else if (!mine.nick) { mine.nick = uname; q("#nick").value = uname; }
   unsub = db.collection("scores").onSnapshot(snap => {
     entries = snap.docs.map(x => ({ id: x.id, ...x.data() }));
     const d = entries.find(e => e.id === me);
